@@ -1,0 +1,4 @@
+target/classes/com/restaurant/shared/dto/WebPushSubscriptionDTO.class
+target/classes/com/restaurant/shared/event/NotificationEvent.class
+target/classes/com/restaurant/shared/event/NotificationEvent$NotificationEventBuilder.class
+target/classes/com/restaurant/shared/event/NotificationEvent$NotificationType.class
