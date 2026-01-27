@@ -1,3 +1,5 @@
 com.restaurant.shared.security.config.BaseSecurityConfig
 com.restaurant.shared.security.service.SharedJwtService
 com.restaurant.shared.security.filter.SharedJwtAuthenticationFilter
+com.restaurant.shared.security.handler.SharedAuthenticationEntryPoint
+com.restaurant.shared.security.handler.SharedAccessDeniedHandler
