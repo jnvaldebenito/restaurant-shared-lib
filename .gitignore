@@ -16,3 +16,9 @@ target/classes/com/restaurant/shared/security/spi/SecurityIntegrationProvider.cl
 target/maven-archiver/pom.properties
 target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
 target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+.idea/.gitignore
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/jarRepositories.xml
+.idea/misc.xml
+.idea/vcs.xml
