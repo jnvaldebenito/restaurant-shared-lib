@@ -10,24 +10,25 @@ import org.slf4j.MDC;
 @Slf4j
 public class TenantContext {
 
-    private static final String TENANT_ID_KEY = "tenantId";
-    private static final ThreadLocal<Long> CURRENT_TENANT = new ThreadLocal<>();
+    private static final String COMPANY_ID_KEY = "companyId";
+    private static final ThreadLocal<Long> CURRENT_COMPANY = new ThreadLocal<>();
 
-    public static void setCurrentTenant(Long tenantId) {
-        CURRENT_TENANT.set(tenantId);
-        if (tenantId != null) {
-            MDC.put(TENANT_ID_KEY, tenantId.toString());
+    public static void setCurrentTenant(Long companyId) {
+        if (companyId != null) {
+            CURRENT_COMPANY.set(companyId);
+            MDC.put(COMPANY_ID_KEY, companyId.toString());
         } else {
-            MDC.remove(TENANT_ID_KEY);
+            CURRENT_COMPANY.remove();
+            MDC.remove(COMPANY_ID_KEY);
         }
     }
 
     public static Long getCurrentTenant() {
-        return CURRENT_TENANT.get();
+        return CURRENT_COMPANY.get();
     }
 
     public static void clear() {
-        CURRENT_TENANT.remove();
-        MDC.remove(TENANT_ID_KEY);
+        CURRENT_COMPANY.remove();
+        MDC.remove(COMPANY_ID_KEY);
     }
 }
