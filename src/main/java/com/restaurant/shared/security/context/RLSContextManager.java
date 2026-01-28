@@ -57,31 +57,47 @@ public class RLSContextManager {
     /**
      * Executes an action with a specific tenant ID.
      * Restores previous setting after execution.
+     * 
+     * @param companyId null to run in EMPTY context (RLS active, no data), NOT
+     *                  SYSTEM context.
+     *                  Use runInSystemContext() explicitly if you need to bypass
+     *                  RLS.
      */
     public <T> T runWithTenantContext(EntityManager entityManager, Long companyId, RLSAction<T> action)
             throws Throwable {
-        if (companyId == null) {
-            return runInSystemContext(entityManager, action);
-        }
-
         Session session = entityManager.unwrap(Session.class);
 
-        String prevTenant = session.doReturningWork(connection -> {
+        // Capture previous state
+        String[] prevState = session.doReturningWork(connection -> {
             try (var stmt = connection.createStatement()) {
-                var rs = stmt.executeQuery("SELECT current_setting('app.current_tenant_id', true)");
+                var rs = stmt.executeQuery(
+                        "SELECT current_setting('app.current_tenant_id', true), current_setting('app.bypass_rls', true)");
                 rs.next();
-                String old = rs.getString(1);
-                stmt.execute("SELECT set_config('app.current_tenant_id', '" + companyId + "', false)");
-                return old;
+                return new String[] { rs.getString(1), rs.getString(2) };
+            }
+        });
+
+        // Set New Context
+        session.doWork(connection -> {
+            try (var stmt = connection.createStatement()) {
+                // IMPORTANT: If companyId is null, we set tenant to empty string (RLS blocks
+                // everything)
+                // We ensure RLS bypass is OFF.
+                String tenantVal = (companyId != null) ? "'" + companyId + "'" : "''";
+                stmt.execute("SELECT set_config('app.current_tenant_id', " + tenantVal + ", false)");
+                stmt.execute("SELECT set_config('app.bypass_rls', 'off', false)");
             }
         });
 
         try {
             return action.execute();
         } finally {
+            // Restore Previous Context
             session.doWork(connection -> {
                 try (var stmt = connection.createStatement()) {
-                    stmt.execute("SELECT set_config('app.current_tenant_id', " + formatValue(prevTenant) + ", false)");
+                    stmt.execute(
+                            "SELECT set_config('app.current_tenant_id', " + formatValue(prevState[0]) + ", false)");
+                    stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(prevState[1]) + ", false)");
                 }
             });
         }
