@@ -22,3 +22,7 @@ target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
 .idea/jarRepositories.xml
 .idea/misc.xml
 .idea/vcs.xml
+target/classes/com/restaurant/shared/security/aspect/TenantRLSAspect.class
+target/classes/com/restaurant/shared/security/context/RLSContextManager.class
+target/classes/com/restaurant/shared/security/context/RLSContextManager$RLSAction.class
+target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
