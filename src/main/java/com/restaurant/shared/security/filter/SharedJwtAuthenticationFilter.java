@@ -40,7 +40,12 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. Resolve Tenant from Domain
         String domain = extractDomain(request);
         if (domain != null) {
-            securityProvider.resolveTenantIdByDomain(domain).ifPresent(TenantContext::setCurrentTenant);
+            securityProvider.resolveTenantIdByDomain(domain).ifPresent(id -> {
+                // Defensive against Jackson deserializing Long as Integer from cache
+                if (id instanceof Number n) {
+                    TenantContext.setCurrentTenant(n.longValue());
+                }
+            });
         }
 
         // 2. Fallback: X-Tenant-ID
@@ -61,9 +66,9 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwt != null) {
                 // Extract companyId from Token if available
                 try {
-                    Integer companyIdClaim = (Integer) jwtService.extractAllClaims(jwt).get("companyId");
-                    if (companyIdClaim != null) {
-                        TenantContext.setCurrentTenant(companyIdClaim.longValue());
+                    Object companyIdClaim = jwtService.extractAllClaims(jwt).get("companyId");
+                    if (companyIdClaim instanceof Number n) {
+                        TenantContext.setCurrentTenant(n.longValue());
                     }
                 } catch (Exception e) {
                     log.debug("Could not extract companyId from token", e);
