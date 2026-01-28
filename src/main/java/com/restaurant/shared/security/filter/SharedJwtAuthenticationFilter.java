@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -40,12 +41,13 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. Resolve Tenant from Domain
         String domain = extractDomain(request);
         if (domain != null) {
-            securityProvider.resolveTenantIdByDomain(domain).ifPresent(id -> {
-                // Defensive against Jackson deserializing Long as Integer from cache
+            Optional<Long> tenantIdOpt = securityProvider.resolveTenantIdByDomain(domain);
+            if (tenantIdOpt.isPresent()) {
+                Object id = tenantIdOpt.get();
                 if (id instanceof Number n) {
                     TenantContext.setCurrentTenant(n.longValue());
                 }
-            });
+            }
         }
 
         // 2. Fallback: X-Tenant-ID
