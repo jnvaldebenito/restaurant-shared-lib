@@ -27,7 +27,7 @@ public class AccessUser implements UserDetails {
     private String password;
 
     private List<String> permissions;
-    private List<PublicOperationDTO> allowedOperations;
+    private List<PublicOperationDto> allowedOperations;
 
     private boolean enabled;
     private boolean accountNonExpired;

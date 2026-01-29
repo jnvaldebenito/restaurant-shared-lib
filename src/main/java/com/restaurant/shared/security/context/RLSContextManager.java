@@ -36,8 +36,8 @@ public class RLSContextManager {
                 String prevTenant = rs.getString(1);
                 String prevBypass = rs.getString(2);
 
-                stmt.execute("SELECT set_config('app.bypass_rls', 'on', false)");
-                stmt.execute("SELECT set_config('app.current_tenant_id', '', false)");
+                stmt.execute("SELECT set_config('app.bypass_rls', 'on', true)");
+                stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
                 return new String[] { prevTenant, prevBypass };
             }
         });
@@ -47,8 +47,8 @@ public class RLSContextManager {
         } finally {
             session.doWork(connection -> {
                 try (var stmt = connection.createStatement()) {
-                    stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(context[1]) + ", false)");
-                    stmt.execute("SELECT set_config('app.current_tenant_id', " + formatValue(context[0]) + ", false)");
+                    stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(context[1]) + ", true)");
+                    stmt.execute("SELECT set_config('app.current_tenant_id', " + formatValue(context[0]) + ", true)");
                 }
             });
         }
@@ -84,8 +84,8 @@ public class RLSContextManager {
                 // everything)
                 // We ensure RLS bypass is OFF.
                 String tenantVal = (companyId != null) ? "'" + companyId + "'" : "''";
-                stmt.execute("SELECT set_config('app.current_tenant_id', " + tenantVal + ", false)");
-                stmt.execute("SELECT set_config('app.bypass_rls', 'off', false)");
+                stmt.execute("SELECT set_config('app.current_tenant_id', " + tenantVal + ", true)");
+                stmt.execute("SELECT set_config('app.bypass_rls', 'off', true)");
             }
         });
 
@@ -96,8 +96,8 @@ public class RLSContextManager {
             session.doWork(connection -> {
                 try (var stmt = connection.createStatement()) {
                     stmt.execute(
-                            "SELECT set_config('app.current_tenant_id', " + formatValue(prevState[0]) + ", false)");
-                    stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(prevState[1]) + ", false)");
+                            "SELECT set_config('app.current_tenant_id', " + formatValue(prevState[0]) + ", true)");
+                    stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(prevState[1]) + ", true)");
                 }
             });
         }
@@ -111,9 +111,9 @@ public class RLSContextManager {
         session.doWork(connection -> {
             try (var stmt = connection.createStatement()) {
                 if (companyId != null) {
-                    stmt.execute("SELECT set_config('app.current_tenant_id', '" + companyId + "', false)");
+                    stmt.execute("SELECT set_config('app.current_tenant_id', '" + companyId + "', true)");
                 } else {
-                    stmt.execute("SELECT set_config('app.current_tenant_id', '', false)");
+                    stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
                 }
             } catch (Exception e) {
                 log.trace("Error setting tenant config {}: {}", companyId, e.getMessage());
@@ -128,7 +128,7 @@ public class RLSContextManager {
         Session session = entityManager.unwrap(Session.class);
         session.doWork(connection -> {
             try (var stmt = connection.createStatement()) {
-                stmt.execute("SELECT set_config('app.current_tenant_id', '', false)");
+                stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
             } catch (Exception e) {
                 log.trace("Error clearing tenant config: {}", e.getMessage());
             }
