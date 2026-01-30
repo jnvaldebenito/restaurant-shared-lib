@@ -125,7 +125,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         String forwardedHost = request.getHeader("X-Forwarded-Host");
         if (StringUtils.hasText(forwardedHost)) {
             String domain = cleanDomain(forwardedHost.split(",")[0]);
-            log.debug("Extracted domain from X-Forwarded-Host: {}", domain);
+            log.info("Extracted domain from X-Forwarded-Host: {}", domain);
             return domain;
         }
 
@@ -133,7 +133,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         String origin = request.getHeader("Origin");
         if (StringUtils.hasText(origin)) {
             String domain = cleanDomain(origin);
-            log.debug("Extracted domain from Origin: {}", domain);
+            log.info("Extracted domain from Origin: {}", domain);
             return domain;
         }
 
@@ -141,7 +141,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         String referer = request.getHeader("Referer");
         if (StringUtils.hasText(referer)) {
             String domain = cleanDomain(referer);
-            log.debug("Extracted domain from Referer: {}", domain);
+            log.info("Extracted domain from Referer: {}", domain);
             return domain;
         }
 
@@ -149,7 +149,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         String host = request.getHeader("Host");
         if (StringUtils.hasText(host)) {
             String domain = cleanDomain(host);
-            log.debug("Extracted domain from Host: {}", domain);
+            log.info("Extracted domain from Host: {}", domain);
             return domain;
         }
 
