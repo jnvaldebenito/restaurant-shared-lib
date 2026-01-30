@@ -121,14 +121,71 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractDomain(HttpServletRequest request) {
+        // 1. Try X-Forwarded-Host (Reverse Proxy / Cloudflare Tunnel)
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        if (StringUtils.hasText(forwardedHost)) {
+            String domain = cleanDomain(forwardedHost.split(",")[0]);
+            log.debug("Extracted domain from X-Forwarded-Host: {}", domain);
+            return domain;
+        }
+
+        // 2. Try Origin (CORS Requests)
         String origin = request.getHeader("Origin");
         if (StringUtils.hasText(origin)) {
-            return origin.replace("https://", "").replace("http://", "").split(":")[0].toLowerCase();
+            String domain = cleanDomain(origin);
+            log.debug("Extracted domain from Origin: {}", domain);
+            return domain;
         }
+
+        // 3. Try Referer (Navigation / Direct Links)
+        String referer = request.getHeader("Referer");
+        if (StringUtils.hasText(referer)) {
+            String domain = cleanDomain(referer);
+            log.debug("Extracted domain from Referer: {}", domain);
+            return domain;
+        }
+
+        // 4. Fallback to Host
         String host = request.getHeader("Host");
         if (StringUtils.hasText(host)) {
-            return host.split(":")[0].toLowerCase();
+            String domain = cleanDomain(host);
+            log.debug("Extracted domain from Host: {}", domain);
+            return domain;
         }
+
         return null;
+    }
+
+    private String cleanDomain(String value) {
+        if (!StringUtils.hasText(value))
+            return null;
+        String val = value.trim();
+        if ("null".equalsIgnoreCase(val))
+            return null;
+
+        // Try parsing as URI for Origin/Referer/URLs
+        if (val.startsWith("http://") || val.startsWith("https://")) {
+            try {
+                java.net.URI uri = java.net.URI.create(val);
+                String host = uri.getHost();
+                if (StringUtils.hasText(host)) {
+                    return host.toLowerCase();
+                }
+            } catch (Exception ignored) {
+                // Ignore and fall through to manual parsing
+            }
+        }
+
+        // Manual parsing fallback (for cases like "example.com:8080" or simple hosts)
+        String domain = val.replace("https://", "").replace("http://", "");
+        // Remove path if present (for Referer)
+        if (domain.contains("/")) {
+            domain = domain.split("/")[0];
+        }
+        // Remove port if present
+        if (domain.contains(":")) {
+            domain = domain.split(":")[0];
+        }
+        return domain.toLowerCase().trim();
     }
 }
