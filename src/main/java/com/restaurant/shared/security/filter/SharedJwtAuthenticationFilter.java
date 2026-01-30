@@ -121,14 +121,46 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractDomain(HttpServletRequest request) {
+        // 1. Try X-Forwarded-Host (Reverse Proxy / Cloudflare Tunnel)
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        if (StringUtils.hasText(forwardedHost)) {
+            return cleanDomain(forwardedHost.split(",")[0]);
+        }
+
+        // 2. Try Origin (CORS Requests)
         String origin = request.getHeader("Origin");
         if (StringUtils.hasText(origin)) {
-            return origin.replace("https://", "").replace("http://", "").split(":")[0].toLowerCase();
+            return cleanDomain(origin);
         }
+
+        // 3. Try Referer (Navigation / Direct Links)
+        String referer = request.getHeader("Referer");
+        if (StringUtils.hasText(referer)) {
+            return cleanDomain(referer);
+        }
+
+        // 4. Fallback to Host
         String host = request.getHeader("Host");
         if (StringUtils.hasText(host)) {
-            return host.split(":")[0].toLowerCase();
+            return cleanDomain(host);
         }
+
         return null;
+    }
+
+    private String cleanDomain(String url) {
+        if (url == null)
+            return null;
+        // Remove protocol
+        String domain = url.replace("https://", "").replace("http://", "");
+        // Remove path if present (for Referer)
+        if (domain.contains("/")) {
+            domain = domain.split("/")[0];
+        }
+        // Remove port if present
+        if (domain.contains(":")) {
+            domain = domain.split(":")[0];
+        }
+        return domain.toLowerCase().trim();
     }
 }
