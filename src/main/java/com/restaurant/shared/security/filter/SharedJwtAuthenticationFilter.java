@@ -68,12 +68,23 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwt != null) {
                 // Extract companyId from Token if available
                 try {
-                    Object companyIdClaim = jwtService.extractAllClaims(jwt).get("companyId");
-                    if (companyIdClaim instanceof Number n) {
+                    var claims = jwtService.extractAllClaims(jwt);
+                    Object scope = claims.get("scope");
+                    Object companyIdClaim = claims.get("companyId");
+
+                    if ("platform".equals(scope)) {
+                        if (companyIdClaim != null) {
+                            log.error("Security Breach Attempt: Platform token with companyId {} detected!",
+                                    companyIdClaim);
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid token scope");
+                            return;
+                        }
+                        TenantContext.clear(); // Ensure no tenant for platform scope
+                    } else if (companyIdClaim instanceof Number n) {
                         TenantContext.setCurrentTenant(n.longValue());
                     }
                 } catch (Exception e) {
-                    log.debug("Could not extract companyId from token", e);
+                    log.debug("Could not extract claims from token", e);
                 }
 
                 String username = jwtService.extractUsername(jwt);
