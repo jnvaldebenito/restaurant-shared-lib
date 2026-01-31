@@ -169,7 +169,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     private String cleanDomain(String value) {
         if (!StringUtils.hasText(value))
             return null;
-        String val = value.trim();
+        String val = value.strip().replaceAll("\\p{Cf}", "");
         if ("null".equalsIgnoreCase(val))
             return null;
 
