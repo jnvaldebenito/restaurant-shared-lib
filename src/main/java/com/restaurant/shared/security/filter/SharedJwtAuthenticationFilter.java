@@ -105,8 +105,12 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.getWriter().write("{\"code\": 401, \"message\": \"Token expired. Please login again.\"}");
         } catch (Exception e) {
-            log.error("Authentication failed: ", e);
-            filterChain.doFilter(request, response);
+            log.error("Authentication filter error: {}", e.getMessage());
+            // If cache fails, we still want the request to proceed if possible.
+            // Spring Security filters downstream will handle access denial.
+            if (!response.isCommitted()) {
+                filterChain.doFilter(request, response);
+            }
         } finally {
             TenantContext.clear();
         }

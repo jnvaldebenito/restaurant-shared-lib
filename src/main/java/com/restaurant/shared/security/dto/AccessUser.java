@@ -11,11 +11,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class AccessUser implements UserDetails {
     @Serial
     private static final long serialVersionUID = 1L;
