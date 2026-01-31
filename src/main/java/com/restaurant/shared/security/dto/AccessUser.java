@@ -25,7 +25,6 @@ public class AccessUser implements UserDetails {
     private Long id;
     private String username;
 
-    @JsonIgnore
     private String password;
 
     private List<String> permissions;
