@@ -121,28 +121,34 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractDomain(HttpServletRequest request) {
-        // 1. Try X-Forwarded-Host (Reverse Proxy / Cloudflare Tunnel)
-        String forwardedHost = request.getHeader("X-Forwarded-Host");
-        if (StringUtils.hasText(forwardedHost)) {
-            String domain = cleanDomain(forwardedHost.split(",")[0]);
-            log.info("Extracted domain from X-Forwarded-Host: {}", domain);
-            return domain;
-        }
-
-        // 2. Try Origin (CORS Requests)
+        // 1. Try Origin (Primary for CORS Requests from browsers)
         String origin = request.getHeader("Origin");
         if (StringUtils.hasText(origin)) {
             String domain = cleanDomain(origin);
-            log.info("Extracted domain from Origin: {}", domain);
-            return domain;
+            if (domain != null) {
+                log.info("Extracted domain from Origin: {}", domain);
+                return domain;
+            }
         }
 
-        // 3. Try Referer (Navigation / Direct Links)
+        // 2. Try Referer (Fallback for Navigation / Direct Links)
         String referer = request.getHeader("Referer");
         if (StringUtils.hasText(referer)) {
             String domain = cleanDomain(referer);
-            log.info("Extracted domain from Referer: {}", domain);
-            return domain;
+            if (domain != null) {
+                log.info("Extracted domain from Referer: {}", domain);
+                return domain;
+            }
+        }
+
+        // 3. Try X-Forwarded-Host (Reverse Proxy / Cloudflare Tunnel)
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        if (StringUtils.hasText(forwardedHost)) {
+            String domain = cleanDomain(forwardedHost.split(",")[0]);
+            if (domain != null) {
+                log.info("Extracted domain from X-Forwarded-Host: {}", domain);
+                return domain;
+            }
         }
 
         // 4. Fallback to Host
