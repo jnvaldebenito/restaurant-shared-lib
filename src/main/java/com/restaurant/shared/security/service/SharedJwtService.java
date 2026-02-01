@@ -16,18 +16,26 @@ import java.util.function.Function;
 @Service
 public class SharedJwtService {
 
-    @Value("${security.jwt.expiration-in-minutes:60}")
+    @Value("${security.jwt.expiration-in-minutes}")
     private Long expirationInMinutes;
 
-    @Value("${security.jwt.refresh-expiration-in-minutes:1440}")
+    @Value("${security.jwt.customer-expiration-in-minutes}") // Default 7 days
+    private Long customerExpirationInMinutes;
+
+    @Value("${security.jwt.refresh-expiration-in-minutes}")
     private Long refreshExpirationInMinutes;
 
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
     public String generateToken(UserDetails user, Map<String, Object> extraClaim) {
+        return generateToken(user, extraClaim, expirationInMinutes);
+    }
+
+    public String generateToken(UserDetails user, Map<String, Object> extraClaim, Long customExpirationInMinutes) {
+        long duration = (customExpirationInMinutes != null) ? customExpirationInMinutes : expirationInMinutes;
         Date issuedAt = new Date(System.currentTimeMillis());
-        Date expiration = new Date((expirationInMinutes * 60 * 1000) + issuedAt.getTime());
+        Date expiration = new Date((duration * 60 * 1000) + issuedAt.getTime());
 
         return Jwts.builder()
                 .header().type("JWT").and()
@@ -76,6 +84,10 @@ public class SharedJwtService {
                 .build()
                 .parseSignedClaims(jwt)
                 .getPayload();
+    }
+
+    public Long getCustomerExpirationInMinutes() {
+        return customerExpirationInMinutes;
     }
 
     private SecretKey generateKey() {
