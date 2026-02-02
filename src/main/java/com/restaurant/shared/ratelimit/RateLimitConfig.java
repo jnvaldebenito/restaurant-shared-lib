@@ -47,7 +47,8 @@ public class RateLimitConfig {
         // Cast to Redisson implementation to access CommandAsyncExecutor required by
         // Bucket4j 8.x
         return RedissonBasedProxyManager.builderFor(((org.redisson.Redisson) redissonClient).getCommandExecutor())
-                .withExpirationStrategy(ExpirationAfterWriteStrategy.fixedExpiration(Duration.ofHours(1)))
+                .withExpirationStrategy(
+                        ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(Duration.ofHours(1)))
                 .build();
     }
 
