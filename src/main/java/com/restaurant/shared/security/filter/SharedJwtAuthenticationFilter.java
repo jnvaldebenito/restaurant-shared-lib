@@ -90,10 +90,20 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtService.extractUsername(jwt);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = securityProvider.loadUserByUsername(username);
+
+                    // DEBUG: Log authorities
+                    log.info("🔐 DEBUG - User: {}, Authorities: {}",
+                            username,
+                            userDetails.getAuthorities());
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    // DEBUG: Verify authorities in SecurityContext
+                    log.info("🔐 DEBUG - SecurityContext Authorities: {}",
+                            SecurityContextHolder.getContext().getAuthentication().getAuthorities());
                 }
             }
 
