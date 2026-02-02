@@ -1,7 +1,9 @@
 package com.restaurant.shared.ratelimit;
 
+import io.github.bucket4j.distributed.ExpirationStrategy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.redis.redisson.cas.RedissonBasedProxyManager;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.starter.RedissonAutoConfigurationCustomizer;
@@ -45,6 +47,7 @@ public class RateLimitConfig {
         // Cast to Redisson implementation to access CommandAsyncExecutor required by
         // Bucket4j 8.x
         return RedissonBasedProxyManager.builderFor(((org.redisson.Redisson) redissonClient).getCommandExecutor())
+                .withExpirationStrategy(ExpirationStrategy.basedOnTimeForRefilling(Duration.ofHours(1)))
                 .build();
     }
 
