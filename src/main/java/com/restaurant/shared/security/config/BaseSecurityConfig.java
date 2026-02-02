@@ -36,7 +36,7 @@ import java.util.Optional;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 @Log4j2
 public class BaseSecurityConfig {
