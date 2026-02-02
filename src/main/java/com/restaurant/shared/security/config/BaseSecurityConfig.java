@@ -4,6 +4,7 @@ import com.restaurant.shared.security.filter.SharedJwtAuthenticationFilter;
 import com.restaurant.shared.security.handler.SharedAccessDeniedHandler;
 import com.restaurant.shared.security.handler.SharedAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -37,6 +38,7 @@ import java.util.Optional;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Log4j2
 public class BaseSecurityConfig {
 
     private final SharedJwtAuthenticationFilter jwtAuthenticationFilter;
@@ -81,7 +83,15 @@ public class BaseSecurityConfig {
                                 .maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives(
-                                        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' *.itss.app *.infinityfreeapp.com;")))
+                                        "default-src 'self'; " +
+                                                "script-src 'self' 'unsafe-inline'; " + // unsafe-inline needed for some
+                                                                                        // SPAs, but should be replaced
+                                                                                        // by nonces if possible
+                                                "style-src 'self' 'unsafe-inline'; " +
+                                                "img-src 'self' data: https:; " +
+                                                "connect-src 'self' *.itss.app; " +
+                                                "frame-ancestors 'none'; " +
+                                                "form-action 'self';")))
                 .build();
     }
 
@@ -91,6 +101,7 @@ public class BaseSecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         if (allowedOrigins.equals("*")) {
+            log.warn("CORS configured with wildcard origin pattern. This is NOT recommended for production.");
             config.setAllowedOriginPatterns(List.of("*"));
         } else {
             config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
