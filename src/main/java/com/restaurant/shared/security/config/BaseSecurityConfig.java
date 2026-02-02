@@ -4,6 +4,8 @@ import com.restaurant.shared.security.filter.SharedJwtAuthenticationFilter;
 import com.restaurant.shared.security.handler.SharedAccessDeniedHandler;
 import com.restaurant.shared.security.handler.SharedAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +43,9 @@ public class BaseSecurityConfig {
     private final SharedAuthenticationEntryPoint authenticationEntryPoint;
     private final SharedAccessDeniedHandler accessDeniedHandler;
     private final Optional<AuthorizationManager<RequestAuthorizationContext>> authorizationManager;
+
+    @Value("${cors.allowed-origins:*}")
+    private String allowedOrigins;
 
     @Bean
     @ConditionalOnMissingBean
@@ -84,7 +89,13 @@ public class BaseSecurityConfig {
     @ConditionalOnMissingBean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+
+        if (allowedOrigins.equals("*")) {
+            config.setAllowedOriginPatterns(List.of("*"));
+        } else {
+            config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        }
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID", "X-XSRF-TOKEN"));
         config.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
