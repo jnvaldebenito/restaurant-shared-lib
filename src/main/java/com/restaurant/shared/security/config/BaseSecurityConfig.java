@@ -57,7 +57,8 @@ public class BaseSecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
                         // Excluir endpoints públicos que no requieren CSRF
-                        .ignoringRequestMatchers("/auth/**", "/public/**", "/v3/api-docs/**", "/swagger-ui/**"))
+                        .ignoringRequestMatchers("/auth/**", "/public/**", "/v3/api-docs/**", "/swagger-ui/**",
+                                "/admin/**"))
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
