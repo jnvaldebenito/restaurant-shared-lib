@@ -38,6 +38,9 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
+        log.debug("SharedJwtAuthenticationFilter: Processing request {} {}", request.getMethod(),
+                request.getRequestURI());
+
         // 1. Resolve Tenant from Domain
         String domain = extractDomain(request);
         if (domain != null) {
@@ -90,6 +93,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtService.extractUsername(jwt);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = securityProvider.loadUserByUsername(username);
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetails(request));
