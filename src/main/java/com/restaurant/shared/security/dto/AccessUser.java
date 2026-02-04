@@ -23,6 +23,7 @@ public class AccessUser implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    private Long companyId;
     private String username;
 
     private String password;

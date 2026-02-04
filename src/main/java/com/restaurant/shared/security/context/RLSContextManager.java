@@ -14,6 +14,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class RLSContextManager {
 
+    private static final ThreadLocal<Boolean> systemContextActive = ThreadLocal.withInitial(() -> false);
+
+    public boolean isSystemContext() {
+        return systemContextActive.get();
+    }
+
     @FunctionalInterface
     public interface RLSAction<T> {
         T execute() throws Throwable;
@@ -25,6 +31,8 @@ public class RLSContextManager {
      */
     public <T> T runInSystemContext(EntityManager entityManager, RLSAction<T> action) throws Throwable {
         Session session = entityManager.unwrap(Session.class);
+        Boolean prevSystemContext = systemContextActive.get();
+        systemContextActive.set(true);
 
         // We use a container to capture the OLD values from inside doReturningWork
         // but restoring must happen in its own doWork to ensure consistency.
@@ -36,6 +44,8 @@ public class RLSContextManager {
                 String prevTenant = rs.getString(1);
                 String prevBypass = rs.getString(2);
 
+                log.debug("Setting System Context. Previous tenant: {}, previous bypass: {}", prevTenant, prevBypass);
+
                 stmt.execute("SELECT set_config('app.bypass_rls', 'on', true)");
                 stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
                 return new String[] { prevTenant, prevBypass };
@@ -45,6 +55,7 @@ public class RLSContextManager {
         try {
             return action.execute();
         } finally {
+            systemContextActive.set(prevSystemContext);
             session.doWork(connection -> {
                 try (var stmt = connection.createStatement()) {
                     stmt.execute("SELECT set_config('app.bypass_rls', " + formatValue(context[1]) + ", true)");
@@ -66,6 +77,8 @@ public class RLSContextManager {
     public <T> T runWithTenantContext(EntityManager entityManager, Long companyId, RLSAction<T> action)
             throws Throwable {
         Session session = entityManager.unwrap(Session.class);
+        Boolean prevSystemContext = systemContextActive.get();
+        systemContextActive.set(false);
 
         // Capture previous state
         String[] prevState = session.doReturningWork(connection -> {
@@ -92,6 +105,7 @@ public class RLSContextManager {
         try {
             return action.execute();
         } finally {
+            systemContextActive.set(prevSystemContext);
             // Restore Previous Context
             session.doWork(connection -> {
                 try (var stmt = connection.createStatement()) {
@@ -136,6 +150,8 @@ public class RLSContextManager {
     }
 
     private String formatValue(String value) {
-        return (value == null || value.isEmpty()) ? "NULL" : "'" + value + "'";
+        if (value == null)
+            return "NULL";
+        return "'" + value.replace("'", "''") + "'";
     }
 }
