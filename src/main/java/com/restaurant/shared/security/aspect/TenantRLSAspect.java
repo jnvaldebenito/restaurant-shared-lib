@@ -24,8 +24,12 @@ public class TenantRLSAspect {
 
     private final com.restaurant.shared.security.context.RLSContextManager rlsContextManager;
 
-    @Around("execution(* com.restaurant..service..*.*(..)) && !execution(* ..SseNotificationService.*(..))")
+    @Around("execution(* com.restaurant..service..*.*(..)) && !within(com.restaurant..service.SseNotificationService)")
     public Object setTenantContext(ProceedingJoinPoint joinPoint) throws Throwable {
+        if (rlsContextManager.isSystemContext()) {
+            return joinPoint.proceed();
+        }
+
         Long companyId = TenantContext.getCurrentTenant();
 
         // Robustness: If TenantContext is missing, recover from SecurityContext
