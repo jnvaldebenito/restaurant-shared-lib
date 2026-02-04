@@ -36,6 +36,8 @@ public class RLSContextManager {
                 String prevTenant = rs.getString(1);
                 String prevBypass = rs.getString(2);
 
+                log.debug("Setting System Context. Previous tenant: {}, previous bypass: {}", prevTenant, prevBypass);
+
                 stmt.execute("SELECT set_config('app.bypass_rls', 'on', true)");
                 stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
                 return new String[] { prevTenant, prevBypass };
@@ -136,6 +138,8 @@ public class RLSContextManager {
     }
 
     private String formatValue(String value) {
-        return (value == null || value.isEmpty()) ? "NULL" : "'" + value + "'";
+        if (value == null)
+            return "NULL";
+        return "'" + value.replace("'", "''") + "'";
     }
 }
