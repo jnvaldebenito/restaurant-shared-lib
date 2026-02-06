@@ -12,6 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Aspect
 @Component
@@ -44,6 +45,15 @@ public class TenantRLSAspect {
             }
         }
 
-        return rlsContextManager.runWithTenantContext(entityManager, companyId, joinPoint::proceed);
+        return rlsContextManager.runWithTenantContext(entityManager, companyId, () -> {
+            Object result = joinPoint.proceed();
+            // Force flush to ensure DB ops happen while RLS context is active
+            // This prevents "Row was updated or deleted by another transaction" errors
+            // caused by the context being restored before the transaction commit/flush.
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                entityManager.flush();
+            }
+            return result;
+        });
     }
 }
