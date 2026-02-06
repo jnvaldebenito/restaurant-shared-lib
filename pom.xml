@@ -68,5 +68,11 @@
 			<artifactId>redisson-spring-boot-starter</artifactId>
 			<version>3.25.2</version>
 		</dependency>
+		<!-- Google JSR305 (fixes Missing class javax.annotation.meta.When warnings) -->
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.2</version>
+		</dependency>
 	</dependencies>
 </project>
