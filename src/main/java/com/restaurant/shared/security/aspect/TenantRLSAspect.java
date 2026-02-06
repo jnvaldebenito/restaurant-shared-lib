@@ -3,6 +3,7 @@ package com.restaurant.shared.security.aspect;
 import com.restaurant.shared.security.context.TenantContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -51,7 +52,12 @@ public class TenantRLSAspect {
             // This prevents "Row was updated or deleted by another transaction" errors
             // caused by the context being restored before the transaction commit/flush.
             if (TransactionSynchronizationManager.isActualTransactionActive()) {
-                entityManager.flush();
+                try {
+                    entityManager.flush();
+                } catch (PersistenceException e) {
+                    log.debug("No flush performed: transaction no longer active or required. Phase: {}",
+                            TransactionSynchronizationManager.isActualTransactionActive());
+                }
             }
             return result;
         });
