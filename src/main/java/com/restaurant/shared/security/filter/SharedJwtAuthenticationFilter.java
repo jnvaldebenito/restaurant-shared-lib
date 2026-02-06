@@ -134,7 +134,6 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(origin)) {
             String domain = cleanDomain(origin);
             if (domain != null) {
-                log.info("Extracted domain from Origin: {}", domain);
                 return domain;
             }
         }
