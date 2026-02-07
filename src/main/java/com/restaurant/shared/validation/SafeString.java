@@ -28,15 +28,34 @@ import java.lang.annotation.*;
 @Documented
 public @interface SafeString {
 
-  String message() default "Entrada contiene caracteres o patrones no permitidos";
+    /**
+     * Message string.
+     *
+     * @return the string
+     */
+    String message() default "Entrada contiene caracteres o patrones no permitidos";
 
-  Class<?>[] groups() default {};
+    /**
+     * Groups class [ ].
+     *
+     * @return the class [ ]
+     */
+    Class<?>[] groups() default {};
 
-  Class<? extends Payload>[] payload() default {};
+    /**
+     * Payload class [ ].
+     *
+     * @return the class [ ]
+     */
+    Class<? extends Payload>[] payload() default {};
 
-  /** Longitud máxima permitida. */
-  int maxLength() default 255;
+    /**
+     * Longitud máxima permitida.  @return the int
+     */
+    int maxLength() default 255;
 
-  /** Si se debe sanitizar HTML. */
-  boolean sanitizeHtml() default true;
+    /**
+     * Si se debe sanitizar HTML.  @return the boolean
+     */
+    boolean sanitizeHtml() default true;
 }

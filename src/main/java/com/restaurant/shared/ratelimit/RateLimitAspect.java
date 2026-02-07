@@ -34,8 +34,14 @@ public class RateLimitAspect {
   private final ClientIpResolver clientIpResolver;
   private final ProxyManager<String> proxyManager;
 
-  /** Intercepta métodos anotados con @RateLimit. */
-  @Around("@annotation(rateLimit)")
+    /**
+     * Intercepta métodos anotados con @RateLimit.  @param pjp the pjp
+     *
+     * @param rateLimit the rate limit
+     * @return the object
+     * @throws Throwable the throwable
+     */
+    @Around("@annotation(rateLimit)")
   public Object checkRateLimit(ProceedingJoinPoint pjp, RateLimit rateLimit) throws Throwable {
     HttpServletRequest request = getCurrentRequest();
     if (request == null) {

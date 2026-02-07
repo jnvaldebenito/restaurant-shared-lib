@@ -68,13 +68,13 @@ public class ClientIpResolver {
           "fe80:" // IPv6 link-local
           );
 
-  /**
-   * Extrae la dirección IP real del cliente desde el request.
-   *
-   * @param request HttpServletRequest
-   * @return IP del cliente o "unknown" si no se puede determinar
-   */
-  public String resolveClientIp(HttpServletRequest request) {
+    /**
+     * Extrae la dirección IP real del cliente desde el request.
+     *
+     * @param request HttpServletRequest
+     * @return IP del cliente o "unknown" si no se puede determinar
+     */
+    public String resolveClientIp(HttpServletRequest request) {
     if (request == null) {
       log.warn("Request is null, cannot resolve client IP");
       return "unknown";
@@ -185,13 +185,13 @@ public class ClientIpResolver {
     return false;
   }
 
-  /**
-   * Obtiene información de debug sobre todos los headers de IP. Útil para troubleshooting.
-   *
-   * @param request HttpServletRequest
-   * @return String con información de debug
-   */
-  public String getIpDebugInfo(HttpServletRequest request) {
+    /**
+     * Obtiene información de debug sobre todos los headers de IP. Útil para troubleshooting.
+     *
+     * @param request HttpServletRequest
+     * @return String con información de debug
+     */
+    public String getIpDebugInfo(HttpServletRequest request) {
     StringBuilder debug = new StringBuilder("IP Headers Debug:\n");
 
     for (String header : IP_HEADERS) {

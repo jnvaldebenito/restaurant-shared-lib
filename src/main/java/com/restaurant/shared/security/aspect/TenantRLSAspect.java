@@ -15,6 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+/**
+ * The type Tenant rls aspect.
+ */
 @Aspect
 @Component
 @Slf4j
@@ -25,7 +28,14 @@ public class TenantRLSAspect {
 
   private final com.restaurant.shared.security.context.RLSContextManager rlsContextManager;
 
-  @Around(
+    /**
+     * Sets tenant context.
+     *
+     * @param joinPoint the join point
+     * @return the tenant context
+     * @throws Throwable the throwable
+     */
+    @Around(
       "(execution(* com.restaurant..service..*.*(..)) || execution(* com.restaurant..controller..*.*(..))) && !within(com.restaurant..service.SseNotificationService)")
   public Object setTenantContext(ProceedingJoinPoint joinPoint) throws Throwable {
     if (rlsContextManager.isSystemContext()) {

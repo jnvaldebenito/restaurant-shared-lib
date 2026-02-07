@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/**
+ * The type Response error dto.
+ */
 @Data
 public class ResponseErrorDto {
   private String code;

@@ -16,20 +16,42 @@ public class RLSContextManager {
   private static final ThreadLocal<Boolean> systemContextActive =
       ThreadLocal.withInitial(() -> false);
 
-  public boolean isSystemContext() {
+    /**
+     * Is system context boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isSystemContext() {
     return systemContextActive.get();
   }
 
-  @FunctionalInterface
+    /**
+     * The interface Rls action.
+     *
+     * @param <T> the type parameter
+     */
+    @FunctionalInterface
   public interface RLSAction<T> {
-    T execute() throws Throwable;
+        /**
+         * Execute t.
+         *
+         * @return the t
+         * @throws Throwable the throwable
+         */
+        T execute() throws Throwable;
   }
 
-  /**
-   * Executes an action with RLS bypassed (System Context). Restores previous tenant and bypass
-   * settings after execution.
-   */
-  public <T> T runInSystemContext(EntityManager entityManager, RLSAction<T> action)
+    /**
+     * Executes an action with RLS bypassed (System Context). Restores previous tenant and bypass
+     * settings after execution.
+     *
+     * @param <T>           the type parameter
+     * @param entityManager the entity manager
+     * @param action        the action
+     * @return the t
+     * @throws Throwable the throwable
+     */
+    public <T> T runInSystemContext(EntityManager entityManager, RLSAction<T> action)
       throws Throwable {
     Session session = entityManager.unwrap(Session.class);
     Boolean prevSystemContext = systemContextActive.get();
@@ -77,13 +99,17 @@ public class RLSContextManager {
     }
   }
 
-  /**
-   * Executes an action with a specific tenant ID. Restores previous setting after execution.
-   *
-   * @param companyId null to run in EMPTY context (RLS active, no data), NOT SYSTEM context. Use
-   *     runInSystemContext() explicitly if you need to bypass RLS.
-   */
-  public <T> T runWithTenantContext(
+    /**
+     * Executes an action with a specific tenant ID. Restores previous setting after execution.
+     *
+     * @param <T>           the type parameter
+     * @param entityManager the entity manager
+     * @param companyId     null to run in EMPTY context (RLS active, no data), NOT SYSTEM context. Use     runInSystemContext() explicitly if you need to bypass RLS.
+     * @param action        the action
+     * @return the t
+     * @throws Throwable the throwable
+     */
+    public <T> T runWithTenantContext(
       EntityManager entityManager, Long companyId, RLSAction<T> action) throws Throwable {
     Session session = entityManager.unwrap(Session.class);
     Boolean prevSystemContext = systemContextActive.get();
@@ -134,8 +160,12 @@ public class RLSContextManager {
     }
   }
 
-  /** Set the RLS context directly (used by Aspects). */
-  public void setTenantConfig(EntityManager entityManager, Long companyId) {
+    /**
+     * Set the RLS context directly (used by Aspects).  @param entityManager the entity manager
+     *
+     * @param companyId the company id
+     */
+    public void setTenantConfig(EntityManager entityManager, Long companyId) {
     Session session = entityManager.unwrap(Session.class);
     session.doWork(
         connection -> {
@@ -151,8 +181,10 @@ public class RLSContextManager {
         });
   }
 
-  /** Clear the RLS context (used by Aspects). */
-  public void clearTenantConfig(EntityManager entityManager) {
+    /**
+     * Clear the RLS context (used by Aspects).  @param entityManager the entity manager
+     */
+    public void clearTenantConfig(EntityManager entityManager) {
     Session session = entityManager.unwrap(Session.class);
     session.doWork(
         connection -> {

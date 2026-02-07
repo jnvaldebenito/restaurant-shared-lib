@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * The type Error response.
+ */
 @Data
 @Builder
 public class ErrorResponse {

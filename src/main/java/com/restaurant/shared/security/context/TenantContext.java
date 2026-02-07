@@ -13,7 +13,12 @@ public class TenantContext {
   private static final String COMPANY_ID_KEY = "companyId";
   private static final ThreadLocal<Long> CURRENT_COMPANY = new ThreadLocal<>();
 
-  public static void setCurrentTenant(Long companyId) {
+    /**
+     * Sets current tenant.
+     *
+     * @param companyId the company id
+     */
+    public static void setCurrentTenant(Long companyId) {
     if (companyId != null) {
       CURRENT_COMPANY.set(companyId);
       MDC.put(COMPANY_ID_KEY, companyId.toString());
@@ -23,11 +28,19 @@ public class TenantContext {
     }
   }
 
-  public static Long getCurrentTenant() {
+    /**
+     * Gets current tenant.
+     *
+     * @return the current tenant
+     */
+    public static Long getCurrentTenant() {
     return CURRENT_COMPANY.get();
   }
 
-  public static void clear() {
+    /**
+     * Clear.
+     */
+    public static void clear() {
     CURRENT_COMPANY.remove();
     MDC.remove(COMPANY_ID_KEY);
   }
