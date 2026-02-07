@@ -109,7 +109,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
 
     } catch (ExpiredJwtException e) {
-      log.warn("JWT Expired: {}", e.getMessage());
+      log.debug("JWT Expired: {}", e.getMessage());
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       response.setContentType("application/json");
       response
