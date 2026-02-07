@@ -1,60 +1,57 @@
 package com.restaurant.shared.security.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.function.Supplier;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.util.StringUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.function.Supplier;
-
 /**
  * Custom CSRF Token Request Handler for Single Page Applications (SPAs).
- * 
- * This handler supports both:
- * 1. Traditional form-based CSRF (using _csrf parameter)
- * 2. SPA-based CSRF (using X-XSRF-TOKEN header)
- * 
- * Based on Spring Security's recommended approach for SPAs:
+ *
+ * <p>This handler supports both: 1. Traditional form-based CSRF (using _csrf parameter) 2.
+ * SPA-based CSRF (using X-XSRF-TOKEN header)
+ *
+ * <p>Based on Spring Security's recommended approach for SPAs:
  * https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa
  */
 public final class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler {
 
-    private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
+  private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response,
-            Supplier<CsrfToken> csrfToken) {
-        /*
-         * Always use XorCsrfTokenRequestAttributeHandler to provide BREACH protection
-         * of the CsrfToken when it is rendered in the response body.
-         */
-        this.delegate.handle(request, response, csrfToken);
-    }
+  @Override
+  public void handle(
+      HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
+    /*
+     * Always use XorCsrfTokenRequestAttributeHandler to provide BREACH protection
+     * of the CsrfToken when it is rendered in the response body.
+     */
+    this.delegate.handle(request, response, csrfToken);
+  }
 
-    @Override
-    public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
-        /*
-         * If the request contains a request header, use
-         * CsrfTokenRequestAttributeHandler
-         * to resolve the CsrfToken. This applies when a single-page application
-         * includes
-         * the header value automatically, which was obtained via a cookie containing
-         * the
-         * raw CsrfToken.
-         */
-        if (StringUtils.hasText(request.getHeader(csrfToken.getHeaderName()))) {
-            return super.resolveCsrfTokenValue(request, csrfToken);
-        }
-        /*
-         * In all other cases (e.g. if the request contains a request parameter), use
-         * XorCsrfTokenRequestAttributeHandler to resolve the CsrfToken. This applies
-         * when a server-side rendered form includes the _csrf request parameter as a
-         * hidden input.
-         */
-        return this.delegate.resolveCsrfTokenValue(request, csrfToken);
+  @Override
+  public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+    /*
+     * If the request contains a request header, use
+     * CsrfTokenRequestAttributeHandler
+     * to resolve the CsrfToken. This applies when a single-page application
+     * includes
+     * the header value automatically, which was obtained via a cookie containing
+     * the
+     * raw CsrfToken.
+     */
+    if (StringUtils.hasText(request.getHeader(csrfToken.getHeaderName()))) {
+      return super.resolveCsrfTokenValue(request, csrfToken);
     }
+    /*
+     * In all other cases (e.g. if the request contains a request parameter), use
+     * XorCsrfTokenRequestAttributeHandler to resolve the CsrfToken. This applies
+     * when a server-side rendered form includes the _csrf request parameter as a
+     * hidden input.
+     */
+    return this.delegate.resolveCsrfTokenValue(request, csrfToken);
+  }
 }
