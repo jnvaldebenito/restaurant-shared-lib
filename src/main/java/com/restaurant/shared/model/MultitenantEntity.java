@@ -19,7 +19,10 @@ public abstract class MultitenantEntity {
   @Column(name = "company_id", nullable = false, updatable = false)
   private Long companyId;
 
-  @PrePersist
+    /**
+     * Pre persist.
+     */
+    @PrePersist
   public void prePersist() {
     if (this.companyId == null) {
       Long currentCompanyId = TenantContext.getCurrentTenant();

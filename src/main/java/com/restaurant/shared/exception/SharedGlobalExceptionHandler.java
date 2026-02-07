@@ -18,13 +18,23 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+/**
+ * The type Shared global exception handler.
+ */
 @ControllerAdvice
 @ConditionalOnWebApplication
 public class SharedGlobalExceptionHandler {
 
   private static final Logger log = LoggerFactory.getLogger(SharedGlobalExceptionHandler.class);
 
-  @ExceptionHandler(RuntimeException.class)
+    /**
+     * Handle runtime exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ErrorResponse> handleRuntimeException(
       RuntimeException ex, WebRequest request) {
     log.error("Runtime exception caught", ex);
@@ -41,7 +51,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(EntityNotFoundException.class)
+    /**
+     * Handle entity not found exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(EntityNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
       EntityNotFoundException ex, WebRequest request) {
     log.warn("Entity not found: {}", ex.getMessage());
@@ -58,7 +75,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
+    /**
+     * Handle illegal argument exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
       IllegalArgumentException ex, WebRequest request) {
     log.warn("Illegal argument: {}", ex.getMessage());
@@ -75,7 +99,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(Exception.class)
+    /**
+     * Handle general exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, WebRequest request) {
     log.error("Unhandled exception caught", ex);
 
@@ -91,7 +122,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  @ExceptionHandler(SecurityException.class)
+    /**
+     * Handle security exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(SecurityException.class)
   public ResponseEntity<ErrorResponse> handleSecurityException(
       SecurityException ex, WebRequest request) {
     log.warn("Security exception: {}", ex.getMessage());
@@ -106,7 +144,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
   }
 
-  @ExceptionHandler(AuthenticationException.class)
+    /**
+     * Handle authentication exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(AuthenticationException.class)
   public ResponseEntity<ErrorResponse> handleAuthenticationException(
       AuthenticationException ex, WebRequest request) {
     log.warn("Authentication failed: {}", ex.getMessage());
@@ -121,7 +166,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
   }
 
-  @ExceptionHandler(RateLimitExceededException.class)
+    /**
+     * Handle rate limit exceeded exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(RateLimitExceededException.class)
   public ResponseEntity<ErrorResponse> handleRateLimitExceededException(
       RateLimitExceededException ex, WebRequest request) {
     log.warn("Rate limit exceeded: {}", ex.getMessage());
@@ -140,7 +192,14 @@ public class SharedGlobalExceptionHandler {
         .body(errorResponse);
   }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
+    /**
+     * Handle validation exceptions response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationExceptions(
       MethodArgumentNotValidException ex, WebRequest request) {
     log.warn("Validation failed: {}", ex.getMessage());
@@ -168,7 +227,14 @@ public class SharedGlobalExceptionHandler {
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(ConstraintViolationException.class)
+    /**
+     * Handle constraint violation exception response entity.
+     *
+     * @param ex      the ex
+     * @param request the request
+     * @return the response entity
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolationException(
       ConstraintViolationException ex, WebRequest request) {
     log.warn("Constraint violation: {}", ex.getMessage());

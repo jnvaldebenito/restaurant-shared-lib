@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * The type Public operation dto.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

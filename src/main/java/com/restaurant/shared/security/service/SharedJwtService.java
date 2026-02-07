@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+/**
+ * The type Shared jwt service.
+ */
 @Service
 public class SharedJwtService {
 
@@ -27,11 +30,26 @@ public class SharedJwtService {
   @Value("${security.jwt.secret-key}")
   private String secretKey;
 
-  public String generateToken(UserDetails user, Map<String, Object> extraClaim) {
+    /**
+     * Generate token string.
+     *
+     * @param user       the user
+     * @param extraClaim the extra claim
+     * @return the string
+     */
+    public String generateToken(UserDetails user, Map<String, Object> extraClaim) {
     return generateToken(user, extraClaim, expirationInMinutes);
   }
 
-  public String generateToken(
+    /**
+     * Generate token string.
+     *
+     * @param user                      the user
+     * @param extraClaim                the extra claim
+     * @param customExpirationInMinutes the custom expiration in minutes
+     * @return the string
+     */
+    public String generateToken(
       UserDetails user, Map<String, Object> extraClaim, Long customExpirationInMinutes) {
     long duration =
         (customExpirationInMinutes != null) ? customExpirationInMinutes : expirationInMinutes;
@@ -50,7 +68,13 @@ public class SharedJwtService {
         .compact();
   }
 
-  public String generateRefreshToken(UserDetails user) {
+    /**
+     * Generate refresh token string.
+     *
+     * @param user the user
+     * @return the string
+     */
+    public String generateRefreshToken(UserDetails user) {
     Date issuedAt = new Date(System.currentTimeMillis());
     Date expiration = new Date((refreshExpirationInMinutes * 60 * 1000) + issuedAt.getTime());
 
@@ -65,28 +89,65 @@ public class SharedJwtService {
         .compact();
   }
 
-  public String extractUsername(String jwt) {
+    /**
+     * Extract username string.
+     *
+     * @param jwt the jwt
+     * @return the string
+     */
+    public String extractUsername(String jwt) {
     return extractAllClaims(jwt).getSubject();
   }
 
-  public Date extractExpiration(String token) {
+    /**
+     * Extract expiration date.
+     *
+     * @param token the token
+     * @return the date
+     */
+    public Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
   }
 
-  public boolean isTokenExpired(String token) {
+    /**
+     * Is token expired boolean.
+     *
+     * @param token the token
+     * @return the boolean
+     */
+    public boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
 
-  public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    /**
+     * Extract claim t.
+     *
+     * @param <T>            the type parameter
+     * @param token          the token
+     * @param claimsResolver the claims resolver
+     * @return the t
+     */
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
   }
 
-  public Claims extractAllClaims(String jwt) {
+    /**
+     * Extract all claims claims.
+     *
+     * @param jwt the jwt
+     * @return the claims
+     */
+    public Claims extractAllClaims(String jwt) {
     return Jwts.parser().verifyWith(generateKey()).build().parseSignedClaims(jwt).getPayload();
   }
 
-  public Long getCustomerExpirationInMinutes() {
+    /**
+     * Gets customer expiration in minutes.
+     *
+     * @return the customer expiration in minutes
+     */
+    public Long getCustomerExpirationInMinutes() {
     return customerExpirationInMinutes;
   }
 

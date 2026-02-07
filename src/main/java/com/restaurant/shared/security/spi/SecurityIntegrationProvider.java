@@ -9,9 +9,17 @@ import org.springframework.security.core.userdetails.UserDetails;
  */
 public interface SecurityIntegrationProvider {
 
-  /** Resolves a tenant ID based on the request domain. */
-  Optional<Long> resolveTenantIdByDomain(String domain);
+    /**
+     * Resolves a tenant ID based on the request domain.  @param domain the domain
+     *
+     * @return the optional
+     */
+    Optional<Long> resolveTenantIdByDomain(String domain);
 
-  /** Loads user details by username. */
-  UserDetails loadUserByUsername(String username);
+    /**
+     * Loads user details by username.  @param username the username
+     *
+     * @return the user details
+     */
+    UserDetails loadUserByUsername(String username);
 }

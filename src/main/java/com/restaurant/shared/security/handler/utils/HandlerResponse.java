@@ -10,9 +10,22 @@ import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+/**
+ * The type Handler response.
+ */
 public final class HandlerResponse {
 
-  public static void generateHandleResponse(
+    /**
+     * Generate handle response.
+     *
+     * @param request   the request
+     * @param response  the response
+     * @param exception the exception
+     * @param status    the status
+     * @param message   the message
+     * @throws IOException the io exception
+     */
+    public static void generateHandleResponse(
       HttpServletRequest request,
       HttpServletResponse response,
       Exception exception,

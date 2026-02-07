@@ -35,12 +35,15 @@ public class RateLimitConfig {
   @Value("${spring.data.redis.database:1}")
   private int redisDatabase;
 
-  /**
-   * Configura el ProxyManager de Bucket4j con Redisson.
-   *
-   * <p>El ProxyManager gestiona los buckets distribuidos en Redis.
-   */
-  @Bean
+    /**
+     * Configura el ProxyManager de Bucket4j con Redisson.
+     *
+     * <p>El ProxyManager gestiona los buckets distribuidos en Redis.
+     *
+     * @param redissonClient the redisson client
+     * @return the proxy manager
+     */
+    @Bean
   public ProxyManager<String> proxyManager(RedissonClient redissonClient) {
     log.info("Configuring Bucket4j ProxyManager with Redis at {}:{}", redisHost, redisPort);
 
@@ -53,13 +56,15 @@ public class RateLimitConfig {
         .build();
   }
 
-  /**
-   * Personaliza la configuración de Redisson si es necesario.
-   *
-   * <p>Por defecto, Redisson se autoconfigura con las propiedades de Spring Boot. Este customizer
-   * permite ajustes adicionales si se requieren.
-   */
-  @Bean
+    /**
+     * Personaliza la configuración de Redisson si es necesario.
+     *
+     * <p>Por defecto, Redisson se autoconfigura con las propiedades de Spring Boot. Este customizer
+     * permite ajustes adicionales si se requieren.
+     *
+     * @return the redisson auto configuration customizer
+     */
+    @Bean
   public RedissonAutoConfigurationCustomizer redissonCustomizer() {
     return config -> {
       // Configuración adicional de Redisson si es necesaria

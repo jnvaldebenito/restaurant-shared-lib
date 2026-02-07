@@ -53,11 +53,14 @@ public class InputSanitizer {
               + "(\\.\\.%5c)",
           Pattern.CASE_INSENSITIVE);
 
-  /**
-   * Sanitiza texto general eliminando caracteres peligrosos. Permite letras, números, espacios y
-   * algunos caracteres especiales seguros.
-   */
-  public String sanitizeText(String input) {
+    /**
+     * Sanitiza texto general eliminando caracteres peligrosos. Permite letras, números, espacios y
+     * algunos caracteres especiales seguros.
+     *
+     * @param input the input
+     * @return the string
+     */
+    public String sanitizeText(String input) {
     if (!StringUtils.hasText(input)) {
       return input;
     }
@@ -74,11 +77,14 @@ public class InputSanitizer {
     return sanitized;
   }
 
-  /**
-   * Sanitiza HTML eliminando todas las etiquetas. Útil para campos de texto que no deben contener
-   * HTML.
-   */
-  public String sanitizeHtml(String input) {
+    /**
+     * Sanitiza HTML eliminando todas las etiquetas. Útil para campos de texto que no deben contener
+     * HTML.
+     *
+     * @param input the input
+     * @return the string
+     */
+    public String sanitizeHtml(String input) {
     if (!StringUtils.hasText(input)) {
       return input;
     }
@@ -105,8 +111,13 @@ public class InputSanitizer {
     return sanitizeText(sanitized);
   }
 
-  /** Valida que un string sea alfanumérico (sin espacios). */
-  public String validateAlphanumeric(String input, String fieldName) {
+    /**
+     * Valida que un string sea alfanumérico (sin espacios).  @param input the input
+     *
+     * @param fieldName the field name
+     * @return the string
+     */
+    public String validateAlphanumeric(String input, String fieldName) {
     if (!StringUtils.hasText(input)) {
       throw new IllegalArgumentException(fieldName + " no puede estar vacío");
     }
@@ -118,8 +129,13 @@ public class InputSanitizer {
     return input;
   }
 
-  /** Valida que un string sea alfanumérico con espacios. */
-  public String validateAlphanumericWithSpaces(String input, String fieldName) {
+    /**
+     * Valida que un string sea alfanumérico con espacios.  @param input the input
+     *
+     * @param fieldName the field name
+     * @return the string
+     */
+    public String validateAlphanumericWithSpaces(String input, String fieldName) {
     if (!StringUtils.hasText(input)) {
       throw new IllegalArgumentException(fieldName + " no puede estar vacío");
     }
@@ -132,8 +148,12 @@ public class InputSanitizer {
     return sanitizeText(input);
   }
 
-  /** Valida email. */
-  public String validateEmail(String email) {
+    /**
+     * Valida email.  @param email the email
+     *
+     * @return the string
+     */
+    public String validateEmail(String email) {
     if (!StringUtils.hasText(email)) {
       throw new IllegalArgumentException("Email no puede estar vacío");
     }
@@ -147,8 +167,12 @@ public class InputSanitizer {
     return sanitized;
   }
 
-  /** Valida teléfono. */
-  public String validatePhone(String phone) {
+    /**
+     * Valida teléfono.  @param phone the phone
+     *
+     * @return the string
+     */
+    public String validatePhone(String phone) {
     if (!StringUtils.hasText(phone)) {
       return phone;
     }
@@ -163,8 +187,12 @@ public class InputSanitizer {
     return sanitized;
   }
 
-  /** Valida dominio. */
-  public String validateDomain(String domain) {
+    /**
+     * Valida dominio.  @param domain the domain
+     *
+     * @return the string
+     */
+    public String validateDomain(String domain) {
     if (!StringUtils.hasText(domain)) {
       throw new IllegalArgumentException("Dominio no puede estar vacío");
     }
@@ -178,8 +206,10 @@ public class InputSanitizer {
     return sanitized;
   }
 
-  /** Valida que no haya patrones maliciosos (SQL Injection, XSS, Path Traversal). */
-  public void validateNoMaliciousPatterns(String input) {
+    /**
+     * Valida que no haya patrones maliciosos (SQL Injection, XSS, Path Traversal).  @param input the input
+     */
+    public void validateNoMaliciousPatterns(String input) {
     if (!StringUtils.hasText(input)) {
       return;
     }
@@ -197,8 +227,14 @@ public class InputSanitizer {
     }
   }
 
-  /** Valida longitud máxima. */
-  public String validateMaxLength(String input, int maxLength, String fieldName) {
+    /**
+     * Valida longitud máxima.  @param input the input
+     *
+     * @param maxLength the max length
+     * @param fieldName the field name
+     * @return the string
+     */
+    public String validateMaxLength(String input, int maxLength, String fieldName) {
     if (input != null && input.length() > maxLength) {
       throw new IllegalArgumentException(
           fieldName + " excede la longitud máxima de " + maxLength + " caracteres");
@@ -206,8 +242,15 @@ public class InputSanitizer {
     return input;
   }
 
-  /** Valida que un valor esté en una lista de valores permitidos. */
-  public <T> T validateAllowedValue(T value, T[] allowedValues, String fieldName) {
+    /**
+     * Valida que un valor esté en una lista de valores permitidos.  @param <T>  the type parameter
+     *
+     * @param value         the value
+     * @param allowedValues the allowed values
+     * @param fieldName     the field name
+     * @return the t
+     */
+    public <T> T validateAllowedValue(T value, T[] allowedValues, String fieldName) {
     if (value == null) {
       throw new IllegalArgumentException(fieldName + " no puede ser nulo");
     }
@@ -228,8 +271,14 @@ public class InputSanitizer {
                     .toArray(String[]::new)));
   }
 
-  /** Sanitización completa para campos de texto libre (nombres, descripciones, etc). */
-  public String sanitizeUserInput(String input, int maxLength, String fieldName) {
+    /**
+     * Sanitización completa para campos de texto libre (nombres, descripciones, etc).  @param input the input
+     *
+     * @param maxLength the max length
+     * @param fieldName the field name
+     * @return the string
+     */
+    public String sanitizeUserInput(String input, int maxLength, String fieldName) {
     if (!StringUtils.hasText(input)) {
       return input;
     }

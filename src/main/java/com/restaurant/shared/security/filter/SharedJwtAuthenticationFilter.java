@@ -25,6 +25,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The type Shared jwt authentication filter.
+ */
 @Slf4j
 @Component
 @AllArgsConstructor

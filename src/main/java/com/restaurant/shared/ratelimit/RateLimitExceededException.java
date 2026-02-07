@@ -9,23 +9,46 @@ public class RateLimitExceededException extends RuntimeException {
   private final long retryAfterSeconds;
   private final long remainingTokens;
 
-  public RateLimitExceededException(String message, long retryAfterSeconds) {
+    /**
+     * Instantiates a new Rate limit exceeded exception.
+     *
+     * @param message           the message
+     * @param retryAfterSeconds the retry after seconds
+     */
+    public RateLimitExceededException(String message, long retryAfterSeconds) {
     super(message);
     this.retryAfterSeconds = retryAfterSeconds;
     this.remainingTokens = 0;
   }
 
-  public RateLimitExceededException(String message, long retryAfterSeconds, long remainingTokens) {
+    /**
+     * Instantiates a new Rate limit exceeded exception.
+     *
+     * @param message           the message
+     * @param retryAfterSeconds the retry after seconds
+     * @param remainingTokens   the remaining tokens
+     */
+    public RateLimitExceededException(String message, long retryAfterSeconds, long remainingTokens) {
     super(message);
     this.retryAfterSeconds = retryAfterSeconds;
     this.remainingTokens = remainingTokens;
   }
 
-  public long getRetryAfterSeconds() {
+    /**
+     * Gets retry after seconds.
+     *
+     * @return the retry after seconds
+     */
+    public long getRetryAfterSeconds() {
     return retryAfterSeconds;
   }
 
-  public long getRemainingTokens() {
+    /**
+     * Gets remaining tokens.
+     *
+     * @return the remaining tokens
+     */
+    public long getRemainingTokens() {
     return remainingTokens;
   }
 }

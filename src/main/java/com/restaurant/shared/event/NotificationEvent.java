@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * The type Notification event.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,8 +19,17 @@ public class NotificationEvent implements Serializable {
   private Object payload;
   private String tenantId;
 
-  public enum NotificationType {
-    KITCHEN,
-    CLIENT
+    /**
+     * The enum Notification type.
+     */
+    public enum NotificationType {
+        /**
+         * Kitchen notification type.
+         */
+        KITCHEN,
+        /**
+         * Client notification type.
+         */
+        CLIENT
   }
 }

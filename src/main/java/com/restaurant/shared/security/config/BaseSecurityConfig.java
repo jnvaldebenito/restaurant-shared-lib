@@ -31,6 +31,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * The type Base security config.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -46,7 +49,14 @@ public class BaseSecurityConfig {
   @Value("${cors.allowed-origins:*}")
   private String allowedOrigins;
 
-  @Bean
+    /**
+     * Security filter chain security filter chain.
+     *
+     * @param http the http
+     * @return the security filter chain
+     * @throws Exception the exception
+     */
+    @Bean
   @ConditionalOnMissingBean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.csrf(csrf -> csrf.disable())
@@ -100,7 +110,12 @@ public class BaseSecurityConfig {
         .build();
   }
 
-  @Bean
+    /**
+     * Cors configuration source cors configuration source.
+     *
+     * @return the cors configuration source
+     */
+    @Bean
   @ConditionalOnMissingBean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
@@ -124,20 +139,39 @@ public class BaseSecurityConfig {
     return source;
   }
 
-  @Bean
+    /**
+     * Authentication manager authentication manager.
+     *
+     * @param config the config
+     * @return the authentication manager
+     * @throws Exception the exception
+     */
+    @Bean
   @ConditionalOnMissingBean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
       throws Exception {
     return config.getAuthenticationManager();
   }
 
-  @Bean
+    /**
+     * Password encoder password encoder.
+     *
+     * @return the password encoder
+     */
+    @Bean
   @ConditionalOnMissingBean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
+    /**
+     * Authentication provider authentication provider.
+     *
+     * @param userDetailsService the user details service
+     * @param passwordEncoder    the password encoder
+     * @return the authentication provider
+     */
+    @Bean
   @ConditionalOnMissingBean
   public AuthenticationProvider authenticationProvider(
       UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
