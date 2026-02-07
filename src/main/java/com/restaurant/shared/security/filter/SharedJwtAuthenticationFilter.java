@@ -1,17 +1,8 @@
 package com.restaurant.shared.security.filter;
 
-import com.restaurant.shared.security.context.TenantContext;
-import com.restaurant.shared.security.service.SharedJwtService;
-import com.restaurant.shared.security.spi.SecurityIntegrationProvider;
-import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +12,18 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.restaurant.shared.security.context.TenantContext;
+import com.restaurant.shared.security.service.SharedJwtService;
+import com.restaurant.shared.security.spi.SecurityIntegrationProvider;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -96,9 +99,8 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
           UserDetails userDetails = securityProvider.loadUserByUsername(username);
 
-          UsernamePasswordAuthenticationToken authToken =
-              new UsernamePasswordAuthenticationToken(
-                  userDetails, null, userDetails.getAuthorities());
+          UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+              userDetails, null, userDetails.getAuthorities());
           authToken.setDetails(new WebAuthenticationDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authToken);
         }
@@ -114,7 +116,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
           .getWriter()
           .write("{\"code\": 401, \"message\": \"Token expired. Please login again.\"}");
     } catch (Exception e) {
-      log.error("Authentication filter error: {}", e.getMessage());
+      log.debug("Authentication filter error: {}", e.getMessage());
       // If cache fails, we still want the request to proceed if possible.
       // Spring Security filters downstream will handle access denial.
       if (!response.isCommitted()) {
@@ -148,7 +150,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(referer)) {
       String domain = cleanDomain(referer);
       if (domain != null) {
-        log.info("Extracted domain from Referer: {}", domain);
+        log.debug("Extracted domain from Referer: {}", domain);
         return domain;
       }
     }
@@ -158,7 +160,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     if (StringUtils.hasText(forwardedHost)) {
       String domain = cleanDomain(forwardedHost.split(",")[0]);
       if (domain != null) {
-        log.info("Extracted domain from X-Forwarded-Host: {}", domain);
+        log.debug("Extracted domain from X-Forwarded-Host: {}", domain);
         return domain;
       }
     }
@@ -167,7 +169,7 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
     String host = request.getHeader("Host");
     if (StringUtils.hasText(host)) {
       String domain = cleanDomain(host);
-      log.info("Extracted domain from Host: {}", domain);
+      log.debug("Extracted domain from Host: {}", domain);
       return domain;
     }
 
@@ -175,9 +177,13 @@ public class SharedJwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private String cleanDomain(String value) {
-    if (!StringUtils.hasText(value)) return null;
+    if (!StringUtils.hasText(value)) {
+      return null;
+    }
     String val = value.strip().replaceAll("\\p{Cf}", "");
-    if ("null".equalsIgnoreCase(val)) return null;
+    if ("null".equalsIgnoreCase(val)) {
+      return null;
+    }
 
     // Try parsing as URI for Origin/Referer/URLs
     if (val.startsWith("http://") || val.startsWith("https://")) {
