@@ -1,14 +1,7 @@
 package com.restaurant.shared.ratelimit;
 
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.distributed.proxy.ProxyManager;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Supplier;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,29 +12,42 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.ConsumptionProbe;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Aspect que intercepta métodos anotados con @RateLimit y aplica rate limiting.
  *
- * <p>Usa Bucket4j con Redis para rate limiting distribuido. Soporta rate limiting por IP o por
+ * <p>
+ * Usa Bucket4j con Redis para rate limiting distribuido. Soporta rate limiting
+ * por IP o por
  * usuario autenticado.
  */
 @Slf4j
 @Aspect
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(prefix = "spring.ratelimit", name = "enabled", havingValue = "true", matchIfMissing = true)
+@org.springframework.boot.autoconfigure.condition.ConditionalOnBean(ProxyManager.class)
 @RequiredArgsConstructor
 public class RateLimitAspect {
 
   private final ClientIpResolver clientIpResolver;
   private final ProxyManager<String> proxyManager;
 
-    /**
-     * Intercepta métodos anotados con @RateLimit.  @param pjp the pjp
-     *
-     * @param rateLimit the rate limit
-     * @return the object
-     * @throws Throwable the throwable
-     */
-    @Around("@annotation(rateLimit)")
+  /**
+   * Intercepta métodos anotados con @RateLimit. @param pjp the pjp
+   *
+   * @param rateLimit the rate limit
+   * @return the object
+   * @throws Throwable the throwable
+   */
+  @Around("@annotation(rateLimit)")
   public Object checkRateLimit(ProceedingJoinPoint pjp, RateLimit rateLimit) throws Throwable {
     HttpServletRequest request = getCurrentRequest();
     if (request == null) {
@@ -81,7 +87,9 @@ public class RateLimitAspect {
   /**
    * Construye la clave única para el bucket de rate limiting.
    *
-   * <p>Formato: "ratelimit:{prefix}:{identifier}" - prefix: keyPrefix de la anotación o nombre del
+   * <p>
+   * Formato: "ratelimit:{prefix}:{identifier}" - prefix: keyPrefix de la
+   * anotación o nombre del
    * método - identifier: IP del cliente o User ID
    */
   private String buildRateLimitKey(
@@ -112,16 +120,13 @@ public class RateLimitAspect {
 
   /** Obtiene o crea un bucket para la clave especificada. */
   private Bucket getBucket(String key, RateLimitType rateLimitType) {
-    Supplier<BucketConfiguration> configSupplier =
-        () ->
-            BucketConfiguration.builder()
-                .addLimit(
-                    limit ->
-                        limit
-                            .capacity(rateLimitType.getCapacity())
-                            .refillGreedy(
-                                rateLimitType.getCapacity(), rateLimitType.getRefillDuration()))
-                .build();
+    Supplier<BucketConfiguration> configSupplier = () -> BucketConfiguration.builder()
+        .addLimit(
+            limit -> limit
+                .capacity(rateLimitType.getCapacity())
+                .refillGreedy(
+                    rateLimitType.getCapacity(), rateLimitType.getRefillDuration()))
+        .build();
 
     return proxyManager.builder().build(key, configSupplier);
   }
@@ -129,8 +134,11 @@ public class RateLimitAspect {
   /**
    * Agrega headers de rate limiting a la respuesta.
    *
-   * <p>Headers estándar: - X-RateLimit-Limit: Límite total - X-RateLimit-Remaining: Tokens
-   * restantes - X-RateLimit-Reset: Timestamp de reset - Retry-After: Segundos para reintentar (solo
+   * <p>
+   * Headers estándar: - X-RateLimit-Limit: Límite total - X-RateLimit-Remaining:
+   * Tokens
+   * restantes - X-RateLimit-Reset: Timestamp de reset - Retry-After: Segundos
+   * para reintentar (solo
    * si excedido)
    */
   private void addRateLimitHeaders(ConsumptionProbe probe, RateLimitType rateLimitType) {
@@ -141,8 +149,7 @@ public class RateLimitAspect {
 
     long limit = rateLimitType.getCapacity();
     long remaining = probe.getRemainingTokens();
-    long resetTimestamp =
-        System.currentTimeMillis() / 1000 + rateLimitType.getRefillDuration().getSeconds();
+    long resetTimestamp = System.currentTimeMillis() / 1000 + rateLimitType.getRefillDuration().getSeconds();
 
     response.setHeader("X-RateLimit-Limit", String.valueOf(limit));
     response.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
@@ -178,15 +185,13 @@ public class RateLimitAspect {
 
   /** Obtiene el HttpServletRequest actual. */
   private HttpServletRequest getCurrentRequest() {
-    ServletRequestAttributes attributes =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     return attributes != null ? attributes.getRequest() : null;
   }
 
   /** Obtiene el HttpServletResponse actual. */
   private HttpServletResponse getCurrentResponse() {
-    ServletRequestAttributes attributes =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     return attributes != null ? attributes.getResponse() : null;
   }
 }
