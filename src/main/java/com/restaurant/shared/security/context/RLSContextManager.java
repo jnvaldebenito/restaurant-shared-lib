@@ -121,7 +121,11 @@ public class RLSContextManager {
     Boolean prevSystemContext = systemContextActive.get();
     systemContextActive.set(false);
 
-    // Capture previous state
+    // Sync with TenantContext
+    Long prevTenantId = TenantContext.getCurrentTenant();
+    TenantContext.setCurrentTenant(companyId);
+
+    // Capture previous state from DB
     String[] prevState = session.doReturningWork(
         connection -> {
           try (var stmt = connection.createStatement()) {
@@ -132,7 +136,7 @@ public class RLSContextManager {
           }
         });
 
-    // Set New Context
+    // Set New Context in DB
     session.doWork(
         connection -> {
           try (var stmt = connection.createStatement()) {
@@ -149,7 +153,9 @@ public class RLSContextManager {
       return action.execute();
     } finally {
       systemContextActive.set(prevSystemContext);
-      // Restore Previous Context
+      TenantContext.setCurrentTenant(prevTenantId); // Restore static context
+
+      // Restore Previous Context in DB
       session.doWork(
           connection -> {
             try (var stmt = connection.createStatement()) {
