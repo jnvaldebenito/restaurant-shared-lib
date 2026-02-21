@@ -1,57 +1,60 @@
 package com.restaurant.shared.security.context;
 
-import jakarta.persistence.EntityManager;
-import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.springframework.stereotype.Component;
 
+import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * Manages the Row Level Security (RLS) context in the database session. Ensures that tenant ID and
- * bypass flags are correctly set and RESTORED particularly in nested service calls.
+ * Manages the Row Level Security (RLS) context in the database session. Ensures
+ * that tenant ID and
+ * bypass flags are correctly set and RESTORED particularly in nested service
+ * calls.
  */
 @Slf4j
 @Component
 public class RLSContextManager {
 
-  private static final ThreadLocal<Boolean> systemContextActive =
-      ThreadLocal.withInitial(() -> false);
+  private static final ThreadLocal<Boolean> systemContextActive = ThreadLocal.withInitial(() -> false);
 
-    /**
-     * Is system context boolean.
-     *
-     * @return the boolean
-     */
-    public boolean isSystemContext() {
+  /**
+   * Is system context boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isSystemContext() {
     return systemContextActive.get();
   }
 
-    /**
-     * The interface Rls action.
-     *
-     * @param <T> the type parameter
-     */
-    @FunctionalInterface
+  /**
+   * The interface Rls action.
+   *
+   * @param <T> the type parameter
+   */
+  @FunctionalInterface
   public interface RLSAction<T> {
-        /**
-         * Execute t.
-         *
-         * @return the t
-         * @throws Throwable the throwable
-         */
-        T execute() throws Throwable;
-  }
-
     /**
-     * Executes an action with RLS bypassed (System Context). Restores previous tenant and bypass
-     * settings after execution.
+     * Execute t.
      *
-     * @param <T>           the type parameter
-     * @param entityManager the entity manager
-     * @param action        the action
      * @return the t
      * @throws Throwable the throwable
      */
-    public <T> T runInSystemContext(EntityManager entityManager, RLSAction<T> action)
+    T execute() throws Throwable;
+  }
+
+  /**
+   * Executes an action with RLS bypassed (System Context). Restores previous
+   * tenant and bypass
+   * settings after execution.
+   *
+   * @param <T>           the type parameter
+   * @param entityManager the entity manager
+   * @param action        the action
+   * @return the t
+   * @throws Throwable the throwable
+   */
+  public <T> T runInSystemContext(EntityManager entityManager, RLSAction<T> action)
       throws Throwable {
     Session session = entityManager.unwrap(Session.class);
     Boolean prevSystemContext = systemContextActive.get();
@@ -59,27 +62,27 @@ public class RLSContextManager {
 
     // We use a container to capture the OLD values from inside doReturningWork
     // but restoring must happen in its own doWork to ensure consistency.
-    String[] context =
-        session.doReturningWork(
-            connection -> {
-              try (var stmt = connection.createStatement()) {
-                var rs =
-                    stmt.executeQuery(
-                        "SELECT current_setting('app.current_tenant_id', true), current_setting('app.bypass_rls', true)");
-                rs.next();
-                String prevTenant = rs.getString(1);
-                String prevBypass = rs.getString(2);
+    String[] context = session.doReturningWork(
+        connection -> {
+          try (var stmt = connection.createStatement()) {
+            var rs = stmt.executeQuery(
+                "SELECT current_setting('app.current_tenant_id', true), current_setting('app.bypass_rls', true)");
+            rs.next();
+            String prevTenant = rs.getString(1);
+            String prevBypass = rs.getString(2);
 
-                log.debug(
-                    "Setting System Context. Previous tenant: {}, previous bypass: {}",
-                    prevTenant,
-                    prevBypass);
+            log.debug(
+                "Setting System Context. Previous tenant: {}, previous bypass: {}",
+                prevTenant,
+                prevBypass);
 
-                stmt.execute("SELECT set_config('app.bypass_rls', 'on', true)");
-                stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
-                return new String[] {prevTenant, prevBypass};
-              }
-            });
+            stmt.execute("SELECT set_config('app.bypass_rls', 'on', true)");
+            stmt.execute("SELECT set_config('app.current_tenant_id', '', true)");
+            log.info(
+                "Switching to System Context (Bypass: on, Tenant: '').");
+            return new String[] { prevTenant, prevBypass };
+          }
+        });
 
     try {
       return action.execute();
@@ -99,36 +102,41 @@ public class RLSContextManager {
     }
   }
 
-    /**
-     * Executes an action with a specific tenant ID. Restores previous setting after execution.
-     *
-     * @param <T>           the type parameter
-     * @param entityManager the entity manager
-     * @param companyId     null to run in EMPTY context (RLS active, no data), NOT SYSTEM context. Use     runInSystemContext() explicitly if you need to bypass RLS.
-     * @param action        the action
-     * @return the t
-     * @throws Throwable the throwable
-     */
-    public <T> T runWithTenantContext(
+  /**
+   * Executes an action with a specific tenant ID. Restores previous setting after
+   * execution.
+   *
+   * @param <T>           the type parameter
+   * @param entityManager the entity manager
+   * @param companyId     null to run in EMPTY context (RLS active, no data), NOT
+   *                      SYSTEM context. Use runInSystemContext() explicitly if
+   *                      you need to bypass RLS.
+   * @param action        the action
+   * @return the t
+   * @throws Throwable the throwable
+   */
+  public <T> T runWithTenantContext(
       EntityManager entityManager, Long companyId, RLSAction<T> action) throws Throwable {
     Session session = entityManager.unwrap(Session.class);
     Boolean prevSystemContext = systemContextActive.get();
     systemContextActive.set(false);
 
-    // Capture previous state
-    String[] prevState =
-        session.doReturningWork(
-            connection -> {
-              try (var stmt = connection.createStatement()) {
-                var rs =
-                    stmt.executeQuery(
-                        "SELECT current_setting('app.current_tenant_id', true), current_setting('app.bypass_rls', true)");
-                rs.next();
-                return new String[] {rs.getString(1), rs.getString(2)};
-              }
-            });
+    // Sync with TenantContext
+    Long prevTenantId = TenantContext.getCurrentTenant();
+    TenantContext.setCurrentTenant(companyId);
 
-    // Set New Context
+    // Capture previous state from DB
+    String[] prevState = session.doReturningWork(
+        connection -> {
+          try (var stmt = connection.createStatement()) {
+            var rs = stmt.executeQuery(
+                "SELECT current_setting('app.current_tenant_id', true), current_setting('app.bypass_rls', true)");
+            rs.next();
+            return new String[] { rs.getString(1), rs.getString(2) };
+          }
+        });
+
+    // Set New Context in DB
     session.doWork(
         connection -> {
           try (var stmt = connection.createStatement()) {
@@ -145,7 +153,9 @@ public class RLSContextManager {
       return action.execute();
     } finally {
       systemContextActive.set(prevSystemContext);
-      // Restore Previous Context
+      TenantContext.setCurrentTenant(prevTenantId); // Restore static context
+
+      // Restore Previous Context in DB
       session.doWork(
           connection -> {
             try (var stmt = connection.createStatement()) {
@@ -160,12 +170,13 @@ public class RLSContextManager {
     }
   }
 
-    /**
-     * Set the RLS context directly (used by Aspects).  @param entityManager the entity manager
-     *
-     * @param companyId the company id
-     */
-    public void setTenantConfig(EntityManager entityManager, Long companyId) {
+  /**
+   * Set the RLS context directly (used by Aspects). @param entityManager the
+   * entity manager
+   *
+   * @param companyId the company id
+   */
+  public void setTenantConfig(EntityManager entityManager, Long companyId) {
     Session session = entityManager.unwrap(Session.class);
     session.doWork(
         connection -> {
@@ -181,10 +192,11 @@ public class RLSContextManager {
         });
   }
 
-    /**
-     * Clear the RLS context (used by Aspects).  @param entityManager the entity manager
-     */
-    public void clearTenantConfig(EntityManager entityManager) {
+  /**
+   * Clear the RLS context (used by Aspects). @param entityManager the entity
+   * manager
+   */
+  public void clearTenantConfig(EntityManager entityManager) {
     Session session = entityManager.unwrap(Session.class);
     session.doWork(
         connection -> {
@@ -197,7 +209,8 @@ public class RLSContextManager {
   }
 
   private String formatValue(String value) {
-    if (value == null) return "NULL";
+    if (value == null)
+      return "NULL";
     return "'" + value.replace("'", "''") + "'";
   }
 }
